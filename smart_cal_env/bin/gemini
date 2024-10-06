@@ -1,0 +1,7 @@
+#!/Users/liubojun/Desktop/smart-calendar-chatbot/smart_cal_env/bin/python3
+from __future__ import absolute_import
+
+from gemini import scripts
+from gemini import gemini_main
+from gemini.gemini_constants import *
+gemini_main.main()
