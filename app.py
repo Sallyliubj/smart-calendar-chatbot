@@ -5,6 +5,8 @@ import bcrypt
 from icalendar import Calendar
 import datetime
 import pandas as pd
+from datetime import timedelta
+import pytz
 
 import os
 
@@ -50,6 +52,8 @@ if choice == "Register":
             if component.name == "VEVENT":
                 event_name = component.get('summary')
                 event_begin = component.get('dtstart').dt
+                if isinstance(event_begin, (datetime.datetime, datetime.date)):
+                    event_begin = event_begin.isoformat()
                 calendar_events.append({"name": event_name, "begin": event_begin})
 
     # Ask about weekly assignments
@@ -57,10 +61,11 @@ if choice == "Register":
     assignments = []
     num_assignments = st.number_input("How many assignments do you have this week?", min_value=0, step=1)
     for i in range(int(num_assignments)):
-        assignment_name = st.text_input(f"Assignment {i + 1} name:")
-        due_date = st.date_input(f"Assignment {i + 1} due date:")
-        assignments.append({"assignment_name": assignment_name, "due_date": due_date})
+        assignment_name = st.text_input(f"Assignment {i + 1} name:", key=f"assignment_name_{i}")
+        due_date = st.date_input(f"Assignment {i + 1} due date:", key=f"due_date_{i}")
+        assignments.append({"assignment_name": assignment_name, "due_date": due_date.isoformat()})
     
+
     if st.button("Register", key="register_button"):
         if password != confirm_password:
             st.error("Passwords do not match. Please try again.")
@@ -84,7 +89,6 @@ if choice == "Register":
 
             st.success("Account created successfully! Please log in.")
             st.session_state.choice = "Login"
-
 
 
 
@@ -115,7 +119,7 @@ if "user" in st.session_state:
     st.write("### Your Information:")
     st.write(f"**Email**: {user['email']}")
     st.write(f"**Sleep Habit**: {user['sleep_habit']}")
-    st.write(f"**Sports Interest**: {', '.join(user['sports_interest'])}")
+    st.write(f"**Sports Interest**: {user['sports_interest'] if isinstance(user['sports_interest'], str) else ', '.join(user['sports_interest'])}")
     st.write(f"**Dietary Preference**: {user['dietary_preference']}")
     st.write("**Exercise Frequency:**")
     if isinstance(user['exercise_frequency'], dict):
@@ -124,16 +128,16 @@ if "user" in st.session_state:
     else:
         st.write("- No exercise frequency data available")
 
-    # Display calendar events if available
+    # Display calendar events for the upcoming week if available
     if "calendar_events" in user and user["calendar_events"]:
-        st.write("### Your Calendar Events:")
-        for event in user["calendar_events"]:
-            st.write(f"- {event['name']} on {event['begin']}")
-
-        # Create a calendar view
-        st.write("### Your Personalized Calendar View:")
+        st.write("### Your Calendar Events for the Upcoming Week:")
         calendar_df = pd.DataFrame(user["calendar_events"])
-        st.write(calendar_df)
+        calendar_df["begin"] = pd.to_datetime(calendar_df["begin"], errors='coerce')
+        today = datetime.datetime.now(pytz.utc)
+        next_week = today + timedelta(weeks=1)
+        upcoming_events = calendar_df[(calendar_df["begin"] >= today) & (calendar_df["begin"] <= next_week)]
+        for _, event in upcoming_events.iterrows():
+            st.write(f"- {event['name']} on {event['begin']}")
 
     # Display assignments if available
     if "assignments" in user and user["assignments"]:
@@ -155,7 +159,7 @@ if "user" in st.session_state:
         for sport in new_sports_interest:
             new_frequency = st.selectbox(f"How often do you want to do {sport} per week?", ["Less than 1", 1, 2, 3, 4, 5, 6, 7], key=f"modify_exercise_{sport}")
             new_exercise_frequency[sport] = new_frequency
-        new_dietary_preference = st.selectbox("What are your dietary preferences?", 
+        new_dietary_preference = st.selectbox("What are your dietary preferences?",
                                               ["Salad", "Fast Food", "Vegetarian", "Vegan", "Balanced Diet", "Keto"],
                                             index=["Salad", "Fast Food", "Vegetarian", "Vegan", "Balanced Diet", "Keto"].index(user["dietary_preference"]), key="modify_dietary_preference")
         
@@ -170,19 +174,28 @@ if "user" in st.session_state:
                 if component.name == "VEVENT":
                     event_name = component.get('summary')
                     event_begin = component.get('dtstart').dt
+                    if isinstance(event_begin, (datetime.datetime, datetime.date)):
+                        event_begin = event_begin.isoformat()
                     new_calendar_events.append({"name": event_name, "begin": event_begin})
         else:
             new_calendar_events = user.get("calendar_events", [])
 
 
-        # Ask about weekly assignments
+        # Modify Weekly Assignments
         st.subheader("Modify Weekly Assignments")
         new_assignments = []
         num_assignments = st.number_input("How many assignments do you have this week?", min_value=0, step=1, value=len(user.get("assignments", [])), key="modify_num_assignments")
+
         for i in range(int(num_assignments)):
-            assignment_name = st.text_input(f"Assignment {i + 1} name:", value=user.get("assignments", [{}])[i].get("assignment_name", ""), key=f"modify_assignment_name_{i}")
-            due_date = st.date_input(f"Assignment {i + 1} due date:", value=user.get("assignments", [{}])[i].get("due_date", datetime.date.today()), key=f"modify_due_date_{i}")
-            new_assignments.append({"assignment_name": assignment_name, "due_date": due_date})
+            assignment_data = user.get("assignments", [])
+            assignment_name = st.text_input(f"Assignment {i + 1} name:", value=assignment_data[i]["assignment_name"] if i < len(assignment_data) else "", key=f"modify_assignment_name_{i}")
+            
+            # Convert the due date to datetime.date format
+            due_date_str = assignment_data[i]["due_date"] if i < len(assignment_data) else datetime.date.today().isoformat()
+            due_date = datetime.datetime.strptime(due_date_str, "%Y-%m-%d").date() if isinstance(due_date_str, str) else due_date_str
+            
+            due_date = st.date_input(f"Assignment {i + 1} due date:", value=due_date, key=f"modify_due_date_{i}")
+            new_assignments.append({"assignment_name": assignment_name, "due_date": due_date.isoformat()})
             
         # Save modifications
         if st.button("Save Modifications", key="save_modifications"):
@@ -200,9 +213,9 @@ if "user" in st.session_state:
                 }}
             )
             st.success("Your information has been updated!")
-            st.experimental_rerun()
+            st.session_state.user = users_collection.find_one({"username": new_username})
+            #st.experimental_rerun()
 
-    
     
     # Link to External Resource for Generating Personalized Calendar
     if True:
@@ -210,4 +223,3 @@ if "user" in st.session_state:
         st.write("Click the link below to generate your personalized weekly schedule using the chatbot.")
         button_html = '<a href="http://10.207.36.19:8501" target="_blank"><button>Generate Personalized Calendar</button></a>'
         st.markdown(button_html, unsafe_allow_html=True)
-
