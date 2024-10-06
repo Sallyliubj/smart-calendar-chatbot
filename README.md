@@ -1,4 +1,7 @@
 # smart-calendar-chatbot
+
+![alt text](CampusWellnessCalendar_logo.jpeg?raw=true)
+
 A SMART chatbot to help college students balance study and life using AI
 
 - Intelligently organizes class schedules, assignments, and personal activities (meals, exercise, rest).
