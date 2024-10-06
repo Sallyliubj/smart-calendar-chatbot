@@ -7,6 +7,9 @@ import datetime
 import pandas as pd
 from datetime import timedelta
 import pytz
+import main
+import gemini_sample
+import calendar_sample
 
 import os
 
@@ -218,8 +221,41 @@ if "user" in st.session_state:
 
     
     # Link to External Resource for Generating Personalized Calendar
-    if True:
+    # if True:
+    #     st.write("### Generating Personalized Calendar")
+    #     st.write("Click the link below to generate your personalized weekly schedule using the chatbot.")
+    #     #button_html = '<a href="http://10.207.36.19:8501" target="_blank"><button>Generate Personalized Calendar</button></a>'
+    #     #st.markdown(button_html, unsafe_allow_html=True)
+        
+    #     if st.button("Try Calendar"):
+            
+    #         def intro():
+    #             st.write("# Welcome to CampusWelness! 👋")
+    #             st.markdown("👈 Checkout the tabs and see what interest you!")
+    #             st.sidebar.success("Select the page above.")
+
+    #         page_names_to_funcs = {
+    #             "—": intro,
+                
+    #             # "Plotting Demo": plotting_demo,
+    #             # "Mapping Demo": mapping_demo,
+    #             # "DataFrame Demo": data_frame_demo,
+    #             "Chatbot": gemini_sample.chatbot,
+    #             "Tasks": calendar_sample.assignment_manager
+    #             # calendar_sample.calendar_visualizer,
+    #             # "Form": form.form
+    #         }
+            
+    #         demo_name = st.sidebar.selectbox("Select a page", page_names_to_funcs.keys())
+    #         page_names_to_funcs[demo_name]()
+
+    # Link to External Resource for Generating Personalized Calendar
+    if "user" in st.session_state:
         st.write("### Generating Personalized Calendar")
-        st.write("Click the link below to generate your personalized weekly schedule using the chatbot.")
-        button_html = '<a href="http://10.207.36.19:8501" target="_blank"><button>Generate Personalized Calendar</button></a>'
-        st.markdown(button_html, unsafe_allow_html=True)
+        st.write("Click the button below to generate your personalized weekly schedule using the chatbot.")
+
+        
+        if st.button("Go to Chatbot"):
+            # Set session state to navigate to the chatbot page
+            st.session_state.page = "Chatbot"
+            main.main()  # Call the main function to render the new page
