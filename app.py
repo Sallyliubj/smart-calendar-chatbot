@@ -10,16 +10,24 @@ import pytz
 import main
 import gemini_sample
 import calendar_sample
+from dotenv import load_dotenv
 
 import os
 
 # Step 1: Connect to MongoDB
-client = MongoClient("mongodb+srv://kusumajaipiam:UCzCvw1d9nuIh7qU@cluster0.fk3ak.mongodb.net/?authMechanism=SCRAM-SHA-1")
+load_dotenv(".env")
+mongo_uri = os.getenv("MONGO_URI")
+client = MongoClient(mongo_uri)
+
+#client = MongoClient("mongodb+srv://kusumajaipiam:UCzCvw1d9nuIh7qU@cluster0.fk3ak.mongodb.net/?authMechanism=SCRAM-SHA-1")
 db = client["smart_calendar_chatbot"]
 users_collection = db["user_profiles"]
 
 # Set OpenAI API key
 #gemini.api_key = os.getenv("AIzaSyCYHFCUF7vSt6ZZNbJ1S4mBSBWSsLgG1dE")
+# Fetch API key from environment
+#fetcheed_api_key = os.getenv("GOOGLE_API_KEY")
+
 
 # Step 2: Streamlit Interface for User Registration and Login
 st.title("User Registration and Login")
@@ -88,6 +96,11 @@ if choice == "Register":
                 "calendar_events": calendar_events,
                 "assignments": assignments
             }
+            user_calendar_data = {
+                "username": username,
+                "email": email,
+                "calendar_events": calendar_events}
+
             users_collection.insert_one(user_data)
 
             st.success("Account created successfully! Please log in.")
@@ -220,13 +233,18 @@ if "user" in st.session_state:
             #st.experimental_rerun()
 
     
-    # Link to External Resource for Generating Personalized Calendar
-    # if True:
-    #     st.write("### Generating Personalized Calendar")
-    #     st.write("Click the link below to generate your personalized weekly schedule using the chatbot.")
-    #     #button_html = '<a href="http://10.207.36.19:8501" target="_blank"><button>Generate Personalized Calendar</button></a>'
-    #     #st.markdown(button_html, unsafe_allow_html=True)
+    #Link to External Resource for Generating Personalized Calendar
+    if True:
+        st.write("### Generating Personalized Calendar")
+        st.write("Click the link below to generate your personalized weekly schedule using the chatbot.")
+        button_html = '<a href="http://10.207.36.19:8501" target="_blank"><button>Generate Personalized Calendar</button></a>'
+        st.markdown(button_html, unsafe_allow_html=True)
         
+
+
+
+
+    
     #     if st.button("Try Calendar"):
             
     #         def intro():
@@ -249,13 +267,17 @@ if "user" in st.session_state:
     #         demo_name = st.sidebar.selectbox("Select a page", page_names_to_funcs.keys())
     #         page_names_to_funcs[demo_name]()
 
+    
+    
+    
+    
     # Link to External Resource for Generating Personalized Calendar
-    if "user" in st.session_state:
-        st.write("### Generating Personalized Calendar")
-        st.write("Click the button below to generate your personalized weekly schedule using the chatbot.")
+    # if "user" in st.session_state:
+    #     st.write("### Generating Personalized Calendar")
+    #     st.write("Click the button below to generate your personalized weekly schedule using the chatbot.")
 
         
-        if st.button("Go to Chatbot"):
-            # Set session state to navigate to the chatbot page
-            st.session_state.page = "Chatbot"
-            main.main()  # Call the main function to render the new page
+    #     if st.button("Go to Chatbot"):
+    #         # Set session state to navigate to the chatbot page
+    #         st.session_state.page = "Chatbot"
+    #         main.main()  # Call the main function to render the new page
