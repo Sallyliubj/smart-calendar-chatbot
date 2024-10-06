@@ -6,11 +6,12 @@ from collections import defaultdict
 
 
 # MongoDB connection setup (update with your credentials)
-client = MongoClient("mongodb+srv://kusumajaipiam:UCzCvw1d9nuIh7qU@cluster0.fk3ak.mongodb.net/")
+client = MongoClient("mongodb+srv://kusumajaipiam:UCzCvw1d9nuIh7qU@cluster0.fk3ak.mongodb.net/?authMechanism=SCRAM-SHA-1")
 db = client["smart_calendar_chatbot"]
 collection = db["user_calendar"]
 # Function to get user data from MongoDB by username
 def get_user_data(username):
+    # st.markdown(collection)
     user_data = collection.find_one({"username": username})
     if user_data:
         return user_data
@@ -51,7 +52,6 @@ def assignment_manager(username="kusumaj"):
     if not user_data:
         st.error(f"No data found for user: {username}")
         return
-
     st.markdown(f"## Assignment Tracker for {user_data['username']} 📋")
 
     # Filter assignments where the status is "working"
