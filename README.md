@@ -14,5 +14,5 @@ A SMART chatbot to help college students balance study and life using AI
 ### Main functions:
 
 - [app.py](app.py): user login and registration page
-- [main.py](main.py): chatbot and tast list
+- [main.py](main.py): chatbot and task list
 - [scheduler.py](scheduler.py): generate personalized calendar 
